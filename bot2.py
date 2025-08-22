@@ -698,72 +698,67 @@ async def guessing_logic(client, chat_id, phone):
             await log_message(chat_id, f"Error in guessing Pokémon: {e}")
 
     # Save Pokémon data when the game reveals the answer
-    @client.on(events.NewMessage(chats=chat_id, pattern="The pokemon was", incoming=True))
-    async def save_pokemon(event):
-        nonlocal pending_guess
-        try:
-            pending_guess = False  # Reset pending status
+    @client.on(events.NewMessage(chats=@client.on(events.NewMessage(chats=chat_id, pattern="The pokemon was", incoming=True))
+async def save_pokemon(event):
+    nonlocal pending_guess
+    try:
+        pending_guess = False  # Reset pending status
+        
+        # Extract Pokémon name
+        message_text = event.message.text or ''
+        pokemon_name = None
+        
+        # Try different patterns to extract Pokémon name
+        patterns = [
+            r'The pokemon was \*\*(.*?)\*\*',
+            r'The pokemon was "(.*?)"',
+            r'The pokemon was (.*?)\.',
+            r'It was \*\*(.*?)\*\*',
+            r'Correct answer was \*\*(.*?)\*\*'
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, message_text)
+            if match:
+                pokemon_name = match.group(1).strip()
+                break
+        
+        if pokemon_name:
+            await log_message(chat_id, f"The Pokémon was: {pokemon_name}")
             
-            # Extract Pokémon name
-            message_text = event.message.text or ''
-            pokemon_name = None
-            
-            # Try different patterns to extract Pokémon name
-            patterns = [
-                r'The pokemon was \*\*(.*?)\*\*',
-                r'The pokemon was "(.*?)"',
-                r'The pokemon was (.*?)\.',
-                r'It was \*\*(.*?)\*\*',
-                r'Correct answer was \*\*(.*?)\*\*'
-            ]
-            
-            for pattern in patterns:
-                match = re.search(pattern, message_text)
-                if match:
-                    pokemon_name = match.group(1).strip()
-                    break
-            
-            if pokemon_name:
-                await log_message(chat_id, f"The Pokémon was: {pokemon_name}")
-                
-                # Check if we have a cached photo for this Pokémon
-                if os.path.exists("saitama/cache.txt"):
-                    try:
-                        with open("saitama/cache.txt", 'r') as inf:
-                            cont = inf.read().strip()
-                        
-                        if cont:
-                            # Save to cache with Pokémon name
-                            cache_dir = "cache"
-                            os.makedirs(cache_dir, exist_ok=True)
-                            cache_path = os.path.join(cache_dir, f"{pokemon_name.lower()}.txt")
-                            
-                            with open(cache_path, 'w') as file:
-                                file.write(cont)
-                            
-                            await log_message(chat_id, f"Saved {pokemon_name} to cache")
-                            
-                            # Clean up temporary cache
-                            try:
-                                os.remove("saitama/cache.txt")
-                            except:
-                                pass
+            # Check if we have a cached photo for this Pokémon
+            if os.path.exists("saitama/cache.txt"):
+                try:
+                    with open("saitama/cache.txt", 'r') as inf:
+                        cont = inf.read().strip()
                     
-                    except Exception as e:
-                        await log_message(chat_id, f"Error processing cache file: {e}")
+                    if cont:
+                        # Save to cache with Pokémon name
+                        cache_dir = "cache"
+                        os.makedirs(cache_dir, exist_ok=True)
+                        cache_path = os.path.join(cache_dir, f"{pokemon_name.lower()}.txt")
+                        
+                        with open(cache_path, 'w') as file:
+                            file.write(cont)
+                        
+                        await log_message(chat_id, f"Saved {pokemon_name} to cache")
+                        
+                        # Clean up temporary cache
+                        try:
+                            os.remove("saitama/cache.txt")
+                        except:
+                            pass
                 
-                # Check if reward was received (+5 💵)
-                if "+5" in message_text or "💵" in message_text:
-                    await log_message(chat_id, "Reward received, continuing guessing")
-                    await asyncio.sleep(2)
-                    await send_guess_command()
-                else:
-                    await log_message(chat_id, "No reward received, stopping guessing")
-                    # Stop guessing if no reward
-                    return
+                except Exception as e:
+                    await log_message(chat_id, f"Error processing cache file: {e}")
+        
+        # Always restart guessing after a few seconds, regardless of reward
+        await log_message(chat_id, "Pokemon revealed, restarting guessing in 2 seconds")
+        await asyncio.sleep(2)
+        await send_guess_command()
             
-        except Exception as e:
-            await log_message(chat_id, f"Error in saving Pokémon data: {e}")
+    except Exception as e:
+        await log_message(chat_id, f"Error in saving Pokémon data: {e}")
 
     # Handle "There is already a guessing game being played" message
     @client.on(events.NewMessage(chats=chat_id, pattern="There is already a guessing game being played", incoming=True))
