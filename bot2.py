@@ -699,7 +699,7 @@ async def guessing_logic(client, chat_id, phone):
 
     # Save Pokémon data when the game reveals the answer
     @client.on(events.NewMessage(chats=@client.on(events.NewMessage(chats=chat_id, pattern="The pokemon was", incoming=True))
-async def save_pokemon(event):
+    async def save_pokemon(event):
     nonlocal pending_guess
     try:
         pending_guess = False  # Reset pending status
