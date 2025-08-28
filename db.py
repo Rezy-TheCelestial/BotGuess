@@ -1,7 +1,7 @@
 import sqlite3
 from typing import Optional, List, Tuple
 
-DB_PATH = 'bot_data.db'
+DB_PATH = 'accounts.db'
 
 def init_db():
     conn = sqlite3.connect(DB_PATH)
