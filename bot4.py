@@ -76,7 +76,7 @@ class Database:
 
 
 # Initialize DB
-db = Database("accounts.db")
+db = Database("bot_data.db")
 db.init_db()
 
 # Configure logging
