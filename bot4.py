@@ -153,7 +153,7 @@ print(f"LOG_CHANNEL_ID: {LOG_CHANNEL_ID}")
 print("="*50)
 
 # Database setup
-DB_NAME = 'bot_data.db'
+DB_NAME = 'accounts.db'
 
 # Global variables
 login_states = {}
